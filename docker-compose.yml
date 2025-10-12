@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+
+  web-bot:
+    build: ./
+    container_name: telegram-bot
+    restart: always
+    env_file: ./.env
+    ports:
+      - "8092:8000"
+    networks:
+      - GLOBAL_NETWORK
+
+networks:
+  GLOBAL_NETWORK:
+    external: true
