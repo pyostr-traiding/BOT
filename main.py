@@ -33,7 +33,7 @@ async def set_webhook():
 
 async def set_commands():
     commands = [
-        types.BotCommand(command='start', description='Главное меню'),
+        # types.BotCommand(command='start', description='Главное меню'),
         types.BotCommand(command='receipt', description='Создать чек'),
         types.BotCommand(command='search', description='Глаз бога'),
     ]
