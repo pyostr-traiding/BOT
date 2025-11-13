@@ -175,11 +175,11 @@ async def menu_extract_input(
     )
     data = await state.get_data()
     # дальше — твоя логика
+    print(data_schema)
     header_alpha, operations_alpha, header_tink, operations_tink = get_params(
         data_schema=data_schema,
         file_path=data['local_path']
     )
-
     path_alpha = render_alpha_pdf(header_alpha, operations_alpha)
     path_tink = render_tink_pdf(header_tink, operations_tink)
 

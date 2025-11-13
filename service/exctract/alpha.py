@@ -66,24 +66,44 @@ def render_alpha_pdf(header_data: dict, operations: list[dict],
         if idx == 0:
             for key, (x, y) in HEADER_COORDS.items():
                 if key in header_data:
-                    txt = header_data[key]
+                    txt = str(header_data[key])
+
+                    # 🔹 если вдруг пришло "ОУФМС ... \\nобл. ..." — превратим в реальный перенос строки
+                    print(txt)
+                    txt = txt.replace("\\n", "\n")
+                    print(txt)
                     fontsize, color = 7, (0, 0, 0)
                     if key in ["address", "period"]:
                         page.insert_textbox(
                             fitz.Rect(x, y - 5, x + 250, y + 40),
-                            txt, fontsize=fontsize, fontfile=font_path,
-                            fontname="DejaVu", color=color, align=0)
+                            txt,
+                            fontsize=fontsize,
+                            fontfile=font_path,
+                            fontname="DejaVu",
+                            color=color,
+                            align=0
+                        )
                     elif key in ["balance_in", "income", "expense",
                                  "balance_out", "limit", "balance_now"]:
                         page.insert_textbox(
                             fitz.Rect(x - 80, y - 5, x, y + 10),
-                            txt, fontsize=fontsize, fontfile=font_path,
-                            fontname="DejaVu", color=color, align=2)
+                            txt,
+                            fontsize=fontsize,
+                            fontfile=font_path,
+                            fontname="DejaVu",
+                            color=color,
+                            align=2
+                        )
                     else:
                         page.insert_textbox(
                             fitz.Rect(x, y - 5, x + 200, y + 10),
-                            txt, fontsize=fontsize, fontfile=font_path,
-                            fontname="DejaVu", color=color, align=0)
+                            txt,
+                            fontsize=fontsize,
+                            fontfile=font_path,
+                            fontname="DejaVu",
+                            color=color,
+                            align=0
+                        )
 
         # === ТАБЛИЦА ===
         packet = io.BytesIO()
