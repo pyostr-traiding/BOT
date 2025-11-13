@@ -36,7 +36,8 @@ async def menu_extract(
 
     await client.send_message(
         chat_id=message.chat.id,
-        text='Загрузите csv файл с биржи'
+        text='Загрузите csv файл с биржи',
+        reply_markup=types.ReplyKeyboardRemove()
     )
 
     await state.set_state(ExtractState.input_file)
@@ -168,8 +169,10 @@ async def menu_extract_input(
     except Exception as e:
         await message.answer(f"Ошибка парсинга: {e}")
         return
-    print(message.text)
-    pprint(data_schema)
+    await client.send_message(
+        chat_id=message.from_user.id,
+        text='Создаем файлы...'
+    )
     data = await state.get_data()
     # дальше — твоя логика
     header_alpha, operations_alpha, header_tink, operations_tink = get_params(
@@ -181,14 +184,20 @@ async def menu_extract_input(
     path_tink = render_tink_pdf(header_tink, operations_tink)
 
 
-    file_alpha = types.FSInputFile(path_alpha)
+    file_alpha_input = types.FSInputFile(path_alpha)
     await client.send_document(
         chat_id=message.chat.id,
-        document=file_alpha
+        document=file_alpha_input
     )
 
-    file_tink = types.FSInputFile(path_tink)
+    file_alpha_tink = types.FSInputFile(path_tink)
     await client.send_document(
         chat_id=message.chat.id,
-        document=file_tink
+        document=file_alpha_tink
     )
+    os.remove(path_alpha)
+    os.remove(path_tink)
+    os.remove(data['local_path'])
+
+    await state.clear()
+
