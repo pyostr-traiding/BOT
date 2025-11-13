@@ -12,7 +12,6 @@ from aiogram.fsm.context import FSMContext
 
 from API.other.schema.user import TGUserSchema
 from conf.conf import client, s3_upload, dp
-from service.decorators.auth import PermissionKeys, auth_require
 from service.exctract.alpha import render_alpha_pdf, render_tink_pdf
 from service.exctract.read_csv import get_params
 from service.exctract.scheame import DataSchema, AlphaSchema, TinkSchema
@@ -27,7 +26,6 @@ s3_client: ServiceResource = boto3.resource(
         endpoint_url='https://s3.timeweb.com',
     )
 
-@auth_require([PermissionKeys.RECEIPT_MENU])
 async def menu_extract(
         message: types.Message,
         auth_user: TGUserSchema,
@@ -82,10 +80,10 @@ async def menu_extract_input_file(
         "Пример заполнения:\n\n"
         "Дата_выдачи=12.02.2025\n"
         "Дата_формирования=12.02.2026\n"
-        "ФИО=Островский Сергей Андреевич\n"
+        "ФИО=Наебалов Биржов Мошенников\n\n"
         "Регистрация=454090, Россия, г. Челябинск, ул. Свободы, д. 77, кв. 12\n\n"
         "Дата_рождения=10.10.2001\n"
-        "ФИО=Островский Сергей Андреевич\n"
+        "ФИО=Наебалов Биржов Мошенников\n"
         "Паспорт_серия=4020\n"
         "Паспорт_номер=700130\n"
         "Паспорт_дата_выдачи=21.03.2015\n"
@@ -94,12 +92,11 @@ async def menu_extract_input_file(
         "Паспорт_Регистрация=454090, Россия, г. Челябинск,\\n ул. Свободы, д. 77, кв. 12\n"
         "Дата_заключения_договора=10.02.2024\n"
         "Код_договора=ТИНК-0014578\n"
-        "Номер_карты=0011\n"
+        "Номер_карты=0011\n\n\n"
+        "Пустой шаблон далее..."
     )
 
     text_template = (
-        "Шаблон для заполнения (скопируйте и заполните):\n\n"
-        "```\n"
         "Дата_выдачи=\n"
         "Дата_формирования=\n"
         "ФИО=\n"
@@ -115,15 +112,16 @@ async def menu_extract_input_file(
         "Дата_заключения_договора=\n"
         "Код_договора=\n"
         "Номер_карты=\n"
-        "```\n"
     )
 
     await client.send_message(
         chat_id=message.from_user.id,
-        text=text_filled + "\n" + text_template,
-        parse_mode="Markdown",
+        text=text_filled,
     )
-
+    await client.send_message(
+        chat_id=message.from_user.id,
+        text=text_template,
+    )
     await state.set_state(ExtractState.input_text)
 
 
