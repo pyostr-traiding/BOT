@@ -36,6 +36,7 @@ async def set_commands():
         # types.BotCommand(command='start', description='Главное меню'),
         types.BotCommand(command='receipt', description='Создать чек'),
         types.BotCommand(command='search', description='Глаз бога'),
+        types.BotCommand(command='extract', description='Выписка'),
     ]
     await client.set_my_commands(commands)
 
@@ -75,6 +76,7 @@ if __name__ == '__main__':
 
     import src.glaz.func as glaz
     import src.receipt.func as receipt
+    import src.extract.func as extract
 
     if PRODUCTION:
 

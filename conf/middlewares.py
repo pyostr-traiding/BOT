@@ -12,6 +12,7 @@ commands = [
     '/receipt',
     '/search',
     '/start',
+    '/extract',
 ]
 
 REFRESH_INTERVAL = 5  # секунд
