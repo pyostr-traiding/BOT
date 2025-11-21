@@ -129,9 +129,6 @@ def get_params(data_schema: DataSchema, file_path) -> tuple[dict, list[dict], di
     balance_in_total = random.uniform(20000, 150000)
     balance_out_total = balance_in_total + income_total - expense_total
 
-    # === добавляем CARD_PURCHASE и CARD_TOPUP как прежде ===
-    # (можно оставить тот же код, что у тебя сейчас выше)
-
     # сортировка после вставок
     data.sort(key=lambda r: parse_time(r["Creation Time"]))
 
@@ -167,6 +164,7 @@ def get_params(data_schema: DataSchema, file_path) -> tuple[dict, list[dict], di
     tink_rows = mutate_times(tink_rows)
 
     # === ПЕРЕСЧЁТ СУММ И БАЛАНСОВ ===
+
     def calc_balances(rows: list[dict], name: str) -> dict:
         inc = sum(float(r["Fiat Amount"]) for r in rows if r["Ad Type"].upper() == "PURCHASE" or "TOPUP" in r["Ad Type"].upper())
         exp = sum(float(r["Fiat Amount"]) for r in rows if r["Ad Type"].upper() in ("SALE", "CARD_PURCHASE"))
@@ -193,7 +191,8 @@ def get_params(data_schema: DataSchema, file_path) -> tuple[dict, list[dict], di
 
     header_alpha = calc_balances(alpha_rows, "Alpha")
     header_tink = calc_balances(tink_rows, "Tink")
-    # === ДОБАВЛЯЕМ ПОЛЯ ШАПКИ ДЛЯ TINK ===
+
+    # === ПОЛЯ ДЛЯ TINK ===
     tink_min_date = min(parse_time(r["Operation Time"]) for r in tink_rows)
     tink_max_date = max(parse_time(r["Operation Time"]) for r in tink_rows)
     isx_number = f"№ {random.getrandbits(32):08x}"
@@ -214,7 +213,8 @@ def get_params(data_schema: DataSchema, file_path) -> tuple[dict, list[dict], di
         "period": f"Движение средств за период с {tink_min_date.strftime('%d.%m.%Y')} по {tink_max_date.strftime('%d.%m.%Y')}",
     })
 
-    # === ГЕНЕРАЦИЯ ОПИСАНИЙ ===
+    # === ГЕНЕРАЦИЯ ОПИСАНИЙ TINK ===
+
     def make_tink_operations(rows: list[dict]) -> list[dict]:
         out = []
         ids = generate_ids(len(rows))
@@ -224,15 +224,14 @@ def get_params(data_schema: DataSchema, file_path) -> tuple[dict, list[dict], di
             ad_type = r["Ad Type"].upper()
             amount = float(r["Fiat Amount"])
 
-            # определяем знак и описание
             if ad_type in ("PURCHASE", "CARD_TOPUP"):
                 sign = "+"
-                desc = "Банковский перевод"
+                desc = "Пополнение. Система\n быстрых платежей"
             else:
                 sign = "-"
-                desc = "Оплата услуг"
+                desc = "Перевод. Система\n быстрых платежей"
 
-            amount_str = f"{sign} {amount:,.2f} Р".replace(",", " ")
+            amount_str = f"{sign} {amount:,.2f} ₽".replace(",", " ")
 
             out.append({
                 "Дата и время операции": f'{dt_op.strftime("%d.%m.%Y")}\n{dt_op.strftime("%H:%M")}',

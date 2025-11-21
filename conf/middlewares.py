@@ -13,6 +13,7 @@ commands = [
     '/search',
     '/start',
     '/extract',
+    '/add',
 ]
 
 REFRESH_INTERVAL = 5  # секунд

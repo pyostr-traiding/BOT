@@ -8,15 +8,37 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 import io
 
+from service.exctract.read_csv import get_params
+from service.exctract.scheame import DataSchema, AlphaSchema, TinkSchema
+import os
+
+# === База директории ===
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # === Шрифты ===
-font_path = "service/exctract/fonts/DejaVuSans.ttf"
+font_path = os.path.join(BASE_DIR, "fonts/tink", "TinkoffSans-Regular.ttf")
+font_path_bold = os.path.join(BASE_DIR, "fonts/tink", "TinkoffSans-Medium.ttf")
+
 pdfmetrics.registerFont(TTFont("DejaVu", font_path))
 dejavu_font = fitz.Font(fontfile=font_path)
 
-
 # === Параметры шаблона ===
-TEMPLATE_PATH_ALPHA = "service/exctract/alpha/Выписка_по_счёту_чистый_header.pdf"
-OUTPUT_PATH_ALPHA = "service/exctract/alpha/выписка_новая.pdf"
+TEMPLATE_PATH_ALPHA = os.path.join(
+    BASE_DIR, "alpha", "Выписка_по_счёту_чистый_header.pdf"
+)
+
+OUTPUT_PATH_ALPHA = os.path.join(
+    BASE_DIR, "alpha", "выписка_новая.pdf"
+)
+
+# === Tink шрифты ===
+TINK_FONT = font_path
+TINK_FONT_NAME = "TINK"
+
+TINK_FONT_BOLD = font_path_bold
+TINK_FONT_BOLD_NANE = "TINK-bold"
+
+TEST = False
 
 HEADER_COORDS = {
     "account": (155, 172),
@@ -51,8 +73,15 @@ def render_alpha_pdf(header_data: dict, operations: list[dict],
     """
     template = fitz.open(template_path)
     result = fitz.open()
-    unique_id = uuid.uuid4().hex
-    output_path = f"service/exctract/alpha/выписка_альфа_{unique_id}.pdf"
+    if TEST:
+        output_path = os.path.join(
+            BASE_DIR, "alpha", f"выписка_альфа_выход.pdf"
+        )
+    else:
+        unique_id = uuid.uuid4().hex
+        output_path = os.path.join(
+            BASE_DIR, "alpha", f"выписка_альфа_{unique_id}.pdf"
+        )
     # разбиваем операции на страницы
     chunks = [operations[:ROWS_FIRST]]
     for i in range(ROWS_FIRST, len(operations), ROWS_NEXT):
@@ -183,17 +212,39 @@ def render_alpha_pdf(header_data: dict, operations: list[dict],
 
 
 # === Заглушка для второй выписки (TINK) ===
-def render_tink_pdf(header_tink: dict, operations_tink: list[dict],
-                    template_path: str = "service/exctract/tink/tink_clear.pdf",
-                    output_path: str = "service/exctract/tink/tink_output.pdf",
-                    base_path: str = "tink/tink_base.pdf"):
+def render_tink_pdf(
+        header_tink: dict,
+        operations_tink: list[dict],
+        template_path: str = None,
+        output_path: str = None,
+        base_path: str = None
+):
     """
     Отрисовывает PDF-выписку Tink в шаблон tink_clear.pdf.
     Добавляет итоговую страницу из чистой версии (tink_clear.pdf).
     """
-    pdfmetrics.registerFont(TTFont("DejaVu", "service/exctract/fonts/DejaVuSans.ttf"))
-    unique_id = uuid.uuid4().hex
-    output_path = f"service/exctract/tink/выписка_тинк_{unique_id}.pdf"
+
+    # === Абсолютные пути по умолчанию ===
+    if template_path is None:
+        template_path = os.path.join(BASE_DIR, "tink", "tink_clear.pdf")
+
+    if output_path is None:
+        unique_id = uuid.uuid4().hex
+        output_path = os.path.join(BASE_DIR, "tink", f"выписка_тинк_{unique_id}.pdf")
+
+    if base_path is None:
+        base_path = os.path.join(BASE_DIR, "tink", "tink_base.pdf")
+
+    pdfmetrics.registerFont(TTFont(TINK_FONT_NAME, TINK_FONT))
+    if TEST:
+        output_path = os.path.join(
+            BASE_DIR, "tink", f"выписка_тинк_выход.pdf"
+        )
+    else:
+        unique_id = uuid.uuid4().hex
+        output_path = os.path.join(
+            BASE_DIR, "tink", f"выписка_тинк_{unique_id}.pdf"
+        )
 
     template = fitz.open(template_path)
     result = fitz.open()
@@ -202,57 +253,57 @@ def render_tink_pdf(header_tink: dict, operations_tink: list[dict],
     HEADER_COORDS_TINK = {
         "isx": {
             "pos": (76.6, 122.4),
-            "font": "DejaVu",
+            "font": TINK_FONT_BOLD_NANE,
             "size": 8.5,
             "bold": False,
         },
 
         "date": {
             "pos": (490, 122.4),
-            "font": "DejaVu",
+            "font": TINK_FONT,
             "size": 8.5,
             "bold": False,
         },
         "fio": {
-            "pos": (55, 145),
-            "font": "DejaVu",
+            "pos": (56.265, 145),
+            "font": TINK_FONT,
             "size": 8.5,
             "bold": True,
         },
 
         "series": {
             "pos": (87, 181),
-            "font": "DejaVu",
+            "font": TINK_FONT,
             "size": 8,
             "bold": False,
         },
         "number": {
             "pos": (210, 181),
-            "font": "DejaVu",
+            "font": TINK_FONT,
             "size": 8,
             "bold": False,
         },
         "date_issue": {
             "pos": (352, 181),
-            "font": "DejaVu",
+            "font": TINK_FONT,
             "size": 8,
             "bold": False,
         },
         "code": {
             "pos": (500, 181),
-            "font": "DejaVu",
+            "font": TINK_FONT,
             "size": 8,
             "bold": False,
         },
         "issued_by": {
             "pos": (125, 199),
-            "font": "DejaVu",
+            "font": TINK_FONT,
             "size": 8,
             "bold": False,
         },
         "address": {
             "pos": (140, 217),
-            "font": "DejaVu",
+            "font": TINK_FONT,
             "size": 8,
             "bold": False,
         },
@@ -261,33 +312,33 @@ def render_tink_pdf(header_tink: dict, operations_tink: list[dict],
 
         "contract_date": {
             "pos": (170, 266),
-            "font": "DejaVu",
+            "font": TINK_FONT,
             "size": 8,
             "bold": False,
         },
         "account_number": {
             "pos": (128, 284),
-            "font": "DejaVu",
+            "font": TINK_FONT,
             "size": 8,
             "bold": False,
         },
         "contract_number": {
             "pos": (152, 302),
-            "font": "DejaVu",
+            "font": TINK_FONT,
             "size": 8,
             "bold": False,
         },
 
         "period": {
-            "pos": (55, 330),
-            "font": "DejaVu",
-            "size": 9,
-            "bold": True,
+            "pos": (56.3, 322),
+            "font": TINK_FONT_BOLD,
+            "size": 12,
+            "bold": False,
         },
     }
 
     # === параметры таблицы ===
-    X_OP_TIME = 57
+    X_OP_TIME = 55.88
     X_WRITE_OFF = 125
     X_SUM_OP = 198
     X_SUM_CARD = 293
@@ -297,7 +348,7 @@ def render_tink_pdf(header_tink: dict, operations_tink: list[dict],
     Y_START_FIRST, Y_START_NEXT = 463, 795
     ROW_H = 18
     ROWS_FIRST, ROWS_NEXT = 14, 25
-    FONT_NAME, FONT_SIZE = "DejaVu", 7.4
+    FONT_NAME, FONT_SIZE = "TINK", 9
 
     # === Разбиваем операции на страницы ===
     chunks = [operations_tink[:ROWS_FIRST]]
@@ -317,24 +368,23 @@ def render_tink_pdf(header_tink: dict, operations_tink: list[dict],
                 if key in header_tink:
                     txt = header_tink[key]
                     x, y = cfg["pos"]
-                    font_name = cfg.get("font", "DejaVu")
-                    size = cfg.get("size", 8)
+                    size = cfg.get("size", 9)
                     bold = cfg.get("bold", False)
 
                     # если жирный — другой файл и другое имя
                     if bold:
-                        font_file = "service/exctract/fonts/DejaVuSans-Bold.ttf"
-                        font_name = "DejaVu-Bold"
+                        font_file = TINK_FONT_BOLD
+                        font_name = TINK_FONT_BOLD_NANE
                     else:
-                        font_file = "service/exctract/fonts/DejaVuSans.ttf"
-                        font_name = "DejaVu-Regular"
+                        font_file = TINK_FONT
+                        font_name = TINK_FONT_NAME
 
                     page.insert_textbox(
                         fitz.Rect(x, y - 5, x + 300, y + 15),
                         txt,
                         fontsize=size,
                         fontfile=font_file,
-                        fontname=font_name,  # имя уникальное для fitz
+                        fontname=font_name,
                         color=(0, 0, 0),
                         align=0
                     )
@@ -355,7 +405,7 @@ def render_tink_pdf(header_tink: dict, operations_tink: list[dict],
             card = op["Номер карты"]
 
             # учёт суммы
-            value = float(sum_op.replace("Р", "").replace(" ", "").replace(",", "."))
+            value = float(sum_op.replace("₽", "").replace(" ", "").replace(",", "."))
             if "-" in sum_op:
                 total_out += abs(value)
             else:
@@ -392,19 +442,25 @@ def render_tink_pdf(header_tink: dict, operations_tink: list[dict],
                     c.drawString(X_OP_TIME, t_y, op_time_lines[i_line])
                 if i_line < len(write_off_lines):
                     c.drawString(X_WRITE_OFF, t_y, write_off_lines[i_line])
+                # вывод сумм (чуть ниже: -3 px)
                 if i_line == 0:
-                    c.drawString(X_SUM_OP, t_y, sum_op)
-                    c.drawString(X_SUM_CARD, t_y, sum_card)
+                    px = 4.9
+                    c.drawString(X_SUM_OP, t_y - px, sum_op)
+                    c.drawString(X_SUM_CARD, t_y - px, sum_card)
                     c.drawString(X_CARD, t_y, card)
                 if i_line < len(desc_lines):
                     c.drawString(X_DESC, t_y, desc_lines[i_line])
 
             # линия-разделитель
             y -= block_height
-            c.setStrokeColor('#4d4d4d')
+
+            top_padding = 7  # был 3, стало 4 (или больше)
+            c.setStrokeColor('#171717')
             c.setLineWidth(1)
-            c.line(55, y + 3, 540, y + 3)
-            y -= 6
+            c.line(X_OP_TIME, y + top_padding, 539.1, y + top_padding)
+
+            bottom_padding = 4
+            y -= bottom_padding
 
         c.setFont(FONT_NAME, 8)
         c.drawRightString(570, 25, f"Страница {idx + 1} из {len(chunks) + 1}")
@@ -420,12 +476,42 @@ def render_tink_pdf(header_tink: dict, operations_tink: list[dict],
 
     text_in = f"{total_in:,.2f} Р".replace(",", " ")
     text_out = f"{total_out:,.2f} Р".replace(",", " ")
-    last_page.insert_text((120, 31), text_in, fontsize=9, fontfile="service/exctract/fonts/DejaVuSans.ttf",
-                          fontname="DejaVu", color=(0, 0, 0))
-    last_page.insert_text((120, 46), text_out, fontsize=9, fontfile="service/exctract/fonts/DejaVuSans.ttf",
-                          fontname="DejaVu", color=(0, 0, 0))
+    last_page.insert_text((120, 31), text_in, fontsize=9, fontfile=TINK_FONT,
+                          fontname=TINK_FONT_NAME, color=(0, 0, 0))
+    last_page.insert_text((120, 46), text_out, fontsize=9, fontfile=TINK_FONT,
+                          fontname=TINK_FONT_NAME, color=(0, 0, 0))
 
     result.save(output_path)
     print(f"✅ PDF для TINK готов: {output_path}")
 
     return output_path
+
+
+# data = DataSchema(
+#     alpha=AlphaSchema(
+#         date_open='10.10.2025',
+#         report_date='10.10.2025',
+#         client='Наебалов Биржов Мошенников',
+#         address='ОУФМС России по Челябинской \\n обл. в г. Челябинске'),
+#     tink=TinkSchema(
+#         date='10.10.2025',
+#         fio='Наебалов Биржов Мошенников',
+#         series='4020',
+#         number='720140',
+#         date_issue='10.10.2025',
+#         code='102-321',
+#         issued_by='ОУФМС России по Челябинской обл. в г. Челябинске',
+#         address='ОУФМС России по Челябинской обл. в г. Челябинске',
+#         contract_date='01.01.2000',
+#         contract_number='HK2371-2394F',
+#         card_number='1234'
+#     )
+# )
+#
+# header_alpha, operations_alpha, header_tink, operations_tink = get_params(
+#         data_schema=data,
+#         file_path='p2p.csv'
+#     )
+#
+# # path_alpha = render_alpha_pdf(header_alpha, operations_alpha)
+# path_tink = render_tink_pdf(header_tink, operations_tink)

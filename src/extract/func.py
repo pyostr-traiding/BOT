@@ -164,6 +164,7 @@ async def menu_extract_input(
         return DataSchema(alpha=alpha, tink=tink)
     try:
         data_schema = parse_input_text(message.text)
+        pprint(data_schema)
     except Exception as e:
         await message.answer(f"Ошибка парсинга: {e}")
         return

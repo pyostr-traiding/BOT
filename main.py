@@ -77,6 +77,7 @@ if __name__ == '__main__':
     import src.glaz.func as glaz
     import src.receipt.func as receipt
     import src.extract.func as extract
+    import src.index.menu.add.func as _add
 
     if PRODUCTION:
 

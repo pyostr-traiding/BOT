@@ -45,3 +45,20 @@ async def user_balance(
         ) as resp:
             if resp.status == 200:
                 return await resp.json()
+
+
+async def user_add_permissions(
+        username: str
+) -> Union[dict, None]:
+    url = f'{settings.BASE_API_URL}/users/addPermission'
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+                url=url,
+                params={'username': username},
+            headers=settings.BASE_HEADERS
+        ) as resp:
+            if resp.status == 200:
+                return 200
+            if resp.status == 404:
+                return 404
+

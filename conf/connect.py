@@ -4,6 +4,7 @@ from API.other.schema.user import TGUserSchema
 from src.extract.func import menu_extract
 from src.glaz.func import glaz_menu
 from src.index.func import start_menu
+from src.index.menu.add.func import add_menu
 from src.receipt.func import menu_receipt
 
 
@@ -38,3 +39,10 @@ async def command_connect(
             state=state,
             auth_user=auth_user
         )
+    if message.text == '/add':
+        return await add_menu(
+            message=message,
+            state=state,
+            auth_user=auth_user
+        )
+
