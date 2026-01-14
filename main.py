@@ -79,10 +79,9 @@ if __name__ == '__main__':
     import src.extract.func as extract
     import src.index.menu.add.func as _add
 
+    start_development()
+
     if PRODUCTION:
-
         start_production()
-
     else:
-
         start_development()

@@ -8,6 +8,7 @@ RUN pip install poetry
 
 # Создание рабочей директории
 RUN mkdir /code
+RUN mkdir /code/logs
 WORKDIR /code
 
 # Копирование файлов проекта
@@ -17,5 +18,3 @@ COPY . /code/
 # Установка зависимостей
 RUN poetry config virtualenvs.create false \
     && poetry install --no-interaction --no-ansi --no-root
-
-CMD ["poetry", "run", "python", "main.py"]

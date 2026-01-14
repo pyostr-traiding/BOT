@@ -77,6 +77,7 @@ async def string_input_menu(
                 }
         ) as resp:
             if resp.status == 200:
+                print(resp)
                 data = await resp.json()
                 if not data['data']['count']:
                     await client.send_message(
@@ -114,3 +115,6 @@ async def string_input_menu(
                     state=state,
                     text='Введите новую строку для поиска'
                 )
+            else:
+                await client.send_message('Ошибка запроса')
+                await state.clear()
